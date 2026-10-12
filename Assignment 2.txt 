@@ -1,0 +1,215 @@
+Assignment – Unit 2: NoSQL Database
+Solutions (Questions 1–15)
+1. Compare Relational Databases (RDBMS) and NoSQL Databases
+Aspect
+RDBMS
+NoSQL
+Examples
+Schema
+Fixed, predefined schema (tables, columns, data types). Schema changes are expensive.
+Flexible / schema-less or schema-on-read. Easy to evolve.
+RDBMS: MySQL, PostgreSQLNoSQL: MongoDB, Cassandra
+Scalability
+Vertical scaling (scale-up) mainly. Horizontal scaling is complex.
+Horizontal scaling (scale-out) designed for distributed systems.
+RDBMS: OracleNoSQL: Cassandra, HBase
+Data Model
+Relational (tables with rows & columns, joins).
+Multiple models: document, key-value, column-family, graph.
+RDBMS: SQL tablesNoSQL: JSON documents, graphs
+Consistency
+Strong consistency (ACID transactions).
+Eventual consistency (BASE) in most cases; some support tunable consistency.
+RDBMS: Banking systemsNoSQL: Social media feeds
+Performance
+Excellent for complex queries & transactions; slower with very large data & high write loads.
+High performance for large-scale reads/writes; optimized for specific access patterns.
+RDBMS: ERP systemsNoSQL: Real-time analytics
+Applications
+Structured data, complex queries, transactions (finance, inventory).
+Big data, real-time web apps, IoT, social networks, content management.
+RDBMS: BankingNoSQL: Netflix, Facebook, Amazon
+2. Explain the following NoSQL databases and their major use cases
+a) MongoDB
+Document-oriented database that stores data as BSON (Binary JSON) documents. Highly flexible schema, rich querying, indexing, and aggregation framework.
+Major use cases: Content management systems, real-time analytics, IoT applications, e-commerce catalogs, mobile backends (e.g., used by eBay, Adobe).
+b) Apache Cassandra
+Wide-column / column-family store designed for high availability and linear scalability. Masterless architecture, tunable consistency, excellent write performance.
+Major use cases: Time-series data, messaging systems, recommendation engines, large-scale logging (e.g., used by Netflix, Instagram, Apple).
+c) Apache HBase
+Column-oriented store built on Hadoop HDFS. Provides random, real-time read/write access to big data. Strongly consistent.
+Major use cases: Large-scale analytical workloads, real-time data serving on top of Hadoop, messaging platforms (e.g., used by Facebook for messaging, Yahoo).
+d) Neo4j
+Native graph database that stores data as nodes, relationships, and properties. Optimized for highly connected data and graph traversals.
+Major use cases: Social networks, fraud detection, recommendation engines, knowledge graphs, network & IT operations (e.g., used by LinkedIn, eBay, NASA).
+3. Explain the RDBMS approach and major challenges with large-scale, distributed, rapidly changing data
+RDBMS Approach:
+Data is organized into tables (relations) with fixed schemas. Relationships are maintained using foreign keys. Queries use SQL with joins. Transactions follow ACID properties (Atomicity, Consistency, Isolation, Durability). Normalization reduces redundancy.
+Major Challenges:
+Scalability: Vertical scaling has hardware limits; horizontal scaling (sharding) is complex and requires application-level changes.
+Schema rigidity: Changing schema (adding columns, altering types) on large tables is costly and causes downtime.
+Performance with big data: Complex joins become very slow on massive datasets. Write-heavy workloads suffer.
+Distributed systems: Maintaining strong consistency and ACID across multiple nodes is difficult (CAP theorem trade-offs).
+Handling unstructured/semi-structured data: Not natural; requires forcing data into tables.
+Rapidly changing data: High velocity data (IoT, social media) overwhelms traditional locking and transaction mechanisms.
+4. What is the NoSQL approach? How does it address RDBMS limitations?
+NoSQL Approach:
+“Not Only SQL” databases designed for modern web-scale applications. They prioritize scalability, flexibility, and high performance over strict ACID guarantees. Most follow BASE properties (Basically Available, Soft state, Eventual consistency) and support multiple data models.
+How NoSQL addresses limitations:
+Scalability: Built for horizontal scaling (sharding + replication) from the ground up.
+Flexibility: Schema-less or flexible schemas allow easy evolution of data structures.
+Performance: Optimized for specific access patterns; avoid expensive joins by using denormalization and aggregates.
+Distributed nature: Designed to run on commodity clusters with high availability.
+Handling diverse data: Native support for documents, graphs, wide columns, key-value pairs.
+5. Explain the following NoSQL data models with suitable examples
+a) Key-Value Data Model
+Simplest model: data stored as key-value pairs. Value can be any binary object. Extremely fast lookups.
+Example: Redis / DynamoDB – User session data: key = session:12345, value = {userId: 42, cart: [...]}.
+b) Document Data Model
+Data stored as self-describing documents (usually JSON/BSON). Documents can have nested structures and different fields.
+Example: MongoDB – Customer document:
+{
+  "_id": "C001",
+  "name": "Alice",
+  "orders": [
+    {"item": "Laptop", "price": 800},
+    {"item": "Mouse", "price": 20}
+  ]
+}
+c) Column-Family Data Model
+Data organized into rows, column families, and columns. Columns can be added dynamically. Optimized for sparse data and high write throughput.
+Example: Cassandra – User activity table: Row key = userId, Column family = “activity”, columns = timestamp → action.
+d) Graph Data Model
+Data stored as nodes (entities) and edges (relationships) with properties. Excellent for connected data.
+Example: Neo4j – Social network:
+(Alice)-[:FRIENDS_WITH]->(Bob)
+(Alice)-[:LIKES]->(Post123)
+6. What are Aggregate-Oriented Databases?
+Aggregate-Oriented Databases store data as aggregates (a collection of related data treated as a single unit).
+Concept of Aggregates: An aggregate is a cluster of data that is accessed together (e.g., an Order with its OrderItems, Customer details, and Shipping info). In NoSQL, the entire aggregate is often stored together in one document or row.
+Usefulness in NoSQL design:
+Avoids expensive joins.
+Improves read/write performance for common access patterns.
+Makes distribution easier (an aggregate can be placed on one node).
+Aligns with domain-driven design.
+Examples: MongoDB documents, Cassandra wide rows.
+7. Differentiate between MongoDB’s Document Model and Cassandra’s Column-Family Model
+Feature
+MongoDB (Document)
+Cassandra (Column-Family)
+Structure
+Hierarchical JSON-like documents
+Rows with dynamic columns grouped in families
+Query flexibility
+Rich queries, secondary indexes, aggregation
+Primarily key-based + secondary indexes; CQL
+Schema
+Flexible per document
+Flexible columns within a family
+Best for
+Nested/hierarchical data, complex objects
+Time-series, high write throughput, sparse data
+Consistency
+Strong (by default)
+Tunable (eventual to strong)
+Suitable applications:
+MongoDB → Content management / product catalog with nested attributes.
+Cassandra → High-volume write workloads such as sensor data or messaging logs.
+8. Explain Replication and Sharding in NoSQL databases
+Replication: Copying data across multiple nodes so that the same data exists in more than one place. Provides high availability and read scalability.
+Sharding (Partitioning): Splitting data across multiple nodes so that each node holds only a portion of the data. Provides write scalability and capacity growth.
+Why important for distributed systems:
+Replication → Fault tolerance and high availability (no single point of failure).
+Sharding → Horizontal scalability (handle more data and higher throughput by adding nodes).
+Together they enable systems that can scale to petabytes and millions of operations per second while remaining available.
+9. Explain the following distribution models (with conceptual diagrams)
+a) Single Server
+All data resides on one machine.
+[ Client ] → [ Single Database Server ]
+b) Sharding
+Data partitioned across multiple servers.
+[ Client ] → [ Shard 1 ]  [ Shard 2 ]  [ Shard 3 ]
+               (Users A-M) (Users N-Z) (Orders)
+c) Master-Slave Replication
+One master handles writes; slaves replicate data and serve reads.
+[ Master ]
+         /    |    \
+    [Slave1] [Slave2] [Slave3]
+d) Peer-to-Peer Replication
+All nodes are equal; any node can accept reads and writes. Data is replicated across peers.
+[ Node A ] ←→ [ Node B ]
+     ↑           ↑
+[ Node C ] ←→ [ Node D ]
+10. What is Master-Slave Replication?
+Working:
+One node is designated as Master (primary). All write operations go to the Master.
+Changes are asynchronously (or synchronously) propagated to one or more Slave (secondary) nodes.
+Clients can read from any Slave (or the Master).
+Advantages:
+Simple to implement.
+Read scalability (add more slaves).
+Master can focus on writes.
+Limitations:
+Master is a single point of failure for writes.
+Replication lag can cause stale reads.
+Write throughput limited by the Master.
+Suitable applications: Read-heavy applications (news websites, content delivery, reporting systems).
+11. Explain Peer-to-Peer Replication. How is it different from Master-Slave?
+Peer-to-Peer Replication: Every node can accept both reads and writes. Data is replicated to other nodes. Conflict resolution mechanisms (last-write-wins, vector clocks, etc.) are used.
+Differences from Master-Slave:
+No single master → no single point of failure for writes.
+Higher write availability and scalability.
+More complex conflict resolution and consistency management.
+Typically used in systems that need continuous availability (Cassandra, Riak).
+12. What is Sharding?
+Sharding is the process of horizontally partitioning data across multiple servers (shards). Each shard holds a subset of the data.
+How data is distributed:
+A shard key is chosen (e.g., userId, hash of key, range of values).
+The system routes requests to the correct shard based on the shard key.
+Common strategies: Range-based, Hash-based, Directory-based.
+Advantages:
+Horizontal scalability.
+Parallel processing of queries.
+Better performance for large datasets.
+Challenges:
+Choosing a good shard key is critical (hot spots).
+Cross-shard queries/joins are expensive or impossible.
+Rebalancing data when adding/removing nodes.
+Increased operational complexity.
+13. Combining Sharding and Replication
+Architecture (conceptual):
+Data is first sharded across multiple shard groups. Each shard is then replicated (usually 3 replicas).
+[ Clients ]
+                         |
+              +----------+----------+
+              |                     |
+         [ Shard 1 ]           [ Shard 2 ]
+         /   |   \             /   |   \
+   Replica1 Replica2 Replica3  R1   R2   R3
+Working:
+A write is sent to the primary replica of the relevant shard.
+The write is then replicated to the other replicas of that shard.
+Reads can be served by any replica of the correct shard.
+This provides both scalability (sharding) and high availability (replication).
+14. What is MapReduce? Explain Map and Reduce phases with a simple example
+MapReduce is a programming model for processing large datasets in parallel across a distributed cluster.
+Map Phase:
+Takes input data and emits intermediate key-value pairs.
+Example (word count on documents):
+Input: “apple banana apple”
+Map output: (apple,1), (banana,1), (apple,1)
+Reduce Phase:
+Takes all values for the same key and aggregates them.
+Reduce for key “apple”: values [1,1] → output (apple, 2)
+Reduce for key “banana”: values [1] → output (banana, 1)
+Simple database example: Counting number of orders per customer from a large orders collection.
+15. Role of MapReduce in database processing and large-scale data analysis
+Role in database processing:
+Enables distributed processing of data that is too large for a single machine.
+Used for aggregation, filtering, transformation, and complex analytics that cannot be expressed efficiently in simple queries.
+Many NoSQL systems (MongoDB, HBase, Cassandra via Hadoop) support MapReduce or similar frameworks (Spark is often preferred today).
+Large-scale data analysis:
+Processes petabytes of data by dividing work across hundreds or thousands of nodes.
+Fault-tolerant (failed tasks are re-executed).
+Ideal for batch analytics: log analysis, recommendation generation, ETL pipelines, statistical computations, etc.
+This completes the solutions for all 15 questions.
