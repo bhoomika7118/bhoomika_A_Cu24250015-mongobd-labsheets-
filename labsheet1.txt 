@@ -1,0 +1,207 @@
+Lab Sheet 1 – MongoDB Solutions (Questions 1–20)
+Below are the complete MongoDB Shell commands with realistic sample data and expected outputs.
+Sample Data Used
+// Students documents
+{ rollNo: 101, name: "Alice Smith", department: "CSE", semester: 3, cgpa: 8.5 }
+{ rollNo: 102, name: "Bob Johnson", department: "ECE", semester: 4, cgpa: 7.8 }
+{ rollNo: 103, name: "Charlie Brown", department: "CSE", semester: 3, cgpa: 9.0 }
+{ rollNo: 104, name: "Diana Prince", department: "ME", semester: 2, cgpa: 8.2 }
+1. Create database StudentDB and verify
+use StudentDB
+db.getName()
+Output:
+switched to db StudentDB
+StudentDB
+2. Create collections Students, Faculty, and Courses
+db.createCollection("Students")
+db.createCollection("Faculty")
+db.createCollection("Courses")
+show collections
+Output:
+{ "ok" : 1 }
+{ "ok" : 1 }
+{ "ok" : 1 }
+Courses
+Faculty
+Students
+3. Insert a single document into Students
+db.Students.insertOne({
+  rollNo: 101,
+  name: "Alice Smith",
+  department: "CSE",
+  semester: 3,
+  cgpa: 8.5
+})
+Output:
+{
+  "acknowledged" : true,
+  "insertedId" : ObjectId("...")
+}
+4. Insert multiple documents
+db.Students.insertMany([
+  { rollNo: 102, name: "Bob Johnson", department: "ECE", semester: 4, cgpa: 7.8 },
+  { rollNo: 103, name: "Charlie Brown", department: "CSE", semester: 3, cgpa: 9.0 },
+  { rollNo: 104, name: "Diana Prince", department: "ME", semester: 2, cgpa: 8.2 }
+])
+Output:
+{
+  "acknowledged" : true,
+  "insertedIds" : {
+    "0" : ObjectId("..."),
+    "1" : ObjectId("..."),
+    "2" : ObjectId("...")
+  }
+}
+5. Retrieve all documents
+db.Students.find().pretty()
+Output:
+{
+  "_id" : ObjectId("..."),
+  "rollNo" : 101,
+  "name" : "Alice Smith",
+  "department" : "CSE",
+  "semester" : 3,
+  "cgpa" : 8.5
+}
+{
+  "_id" : ObjectId("..."),
+  "rollNo" : 102,
+  "name" : "Bob Johnson",
+  "department" : "ECE",
+  "semester" : 4,
+  "cgpa" : 7.8
+}
+... (remaining documents)
+6. Retrieve specific student by Roll Number
+db.Students.find({ rollNo: 101 }).pretty()
+Output:
+{
+  "_id" : ObjectId("..."),
+  "rollNo" : 101,
+  "name" : "Alice Smith",
+  "department" : "CSE",
+  "semester" : 3,
+  "cgpa" : 8.5
+}
+7. Retrieve documents by Department condition
+db.Students.find({ department: "CSE" }).pretty()
+Output:
+{
+  "_id" : ObjectId("..."),
+  "rollNo" : 101,
+  "name" : "Alice Smith",
+  "department" : "CSE",
+  "semester" : 3,
+  "cgpa" : 8.5
+}
+{
+  "_id" : ObjectId("..."),
+  "rollNo" : 103,
+  "name" : "Charlie Brown",
+  "department" : "CSE",
+  "semester" : 3,
+  "cgpa" : 9.0
+}
+8. Display only selected fields (Name and Department)
+db.Students.find({}, { name: 1, department: 1, _id: 0 }).pretty()
+Output:
+{ "name" : "Alice Smith", "department" : "CSE" }
+{ "name" : "Bob Johnson", "department" : "ECE" }
+{ "name" : "Charlie Brown", "department" : "CSE" }
+{ "name" : "Diana Prince", "department" : "ME" }
+9. Update department of a specific student (updateOne)
+db.Students.updateOne(
+  { rollNo: 104 },
+  { $set: { department: "CSE" } }
+)
+Output:
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+10. Modify semester of all students of a particular department (updateMany)
+db.Students.updateMany(
+  { department: "CSE" },
+  { $set: { semester: 4 } }
+)
+Output:
+{ "acknowledged" : true, "matchedCount" : 3, "modifiedCount" : 3 }
+11. Replace an existing student document (replaceOne)
+db.Students.replaceOne(
+  { rollNo: 102 },
+  {
+    rollNo: 102,
+    name: "Robert Johnson",
+    department: "ECE",
+    semester: 5,
+    cgpa: 8.1
+  }
+)
+Output:
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+12. Add a new field Email to all documents
+db.Students.updateMany(
+  {},
+  { $set: { email: "student@example.com" } }
+)
+Output:
+{ "acknowledged" : true, "matchedCount" : 4, "modifiedCount" : 4 }
+13. Remove an existing field from all documents
+db.Students.updateMany(
+  {},
+  { $unset: { email: "" } }
+)
+Output:
+{ "acknowledged" : true, "matchedCount" : 4, "modifiedCount" : 4 }
+14. Delete a specific student by Roll Number (deleteOne)
+db.Students.deleteOne({ rollNo: 104 })
+Output:
+{ "acknowledged" : true, "deletedCount" : 1 }
+15. Delete multiple student records (deleteMany)
+db.Students.deleteMany({ department: "ECE" })
+Output:
+{ "acknowledged" : true, "deletedCount" : 1 }
+16. Count total number of documents
+db.Students.countDocuments()
+Output:
+2
+17. Rename collection Students to StudentDetails
+db.Students.renameCollection("StudentDetails")
+show collections
+Output:
+{ "ok" : 1 }
+Courses
+Faculty
+StudentDetails
+18. Create collection Departments and insert sample data
+db.createCollection("Departments")
+db.Departments.insertMany([
+  { deptCode: "CSE", deptName: "Computer Science and Engineering", HOD: "Dr. Sharma" },
+  { deptCode: "ECE", deptName: "Electronics and Communication", HOD: "Dr. Verma" },
+  { deptCode: "ME", deptName: "Mechanical Engineering", HOD: "Dr. Gupta" }
+])
+Output:
+{ "ok" : 1 }
+{
+  "acknowledged" : true,
+  "insertedIds" : { "0" : ObjectId("..."), "1" : ObjectId("..."), "2" : ObjectId("...") }
+}
+19. Drop the Departments collection and verify
+db.Departments.drop()
+show collections
+Output:
+true
+Courses
+Faculty
+StudentDetails
+20. Drop the StudentDB database and confirm
+db.dropDatabase()
+show dbs
+Output:
+{ "dropped" : "StudentDB", "ok" : 1 }
+admin   0.000GB
+config  0.000GB
+local   0.000GB
+(StudentDB no longer appears in the list.)
+Notes for Lab Submission
+Always start MongoDB service (mongod) before running these commands.
+Use .pretty() for readable output.
+ObjectIds will be different every time you run the commands.
+After question 20, you can recreate the database if needed for further experiments (as mentioned in question 21 of the sheet).
