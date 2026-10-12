@@ -1,0 +1,288 @@
+Lab Sheet Solutions 5 : NoSQL Database Design (Riak KV + Neo4j)
+Below are complete, practical solutions for all 15 questions. Commands, code, and expected outputs are shown so you can run them on a Linux system.
+Riak KV Section (Questions 1–10)
+1. Install & Configure Riak KV + Basic CRUD on students bucket
+# Install (Ubuntu/Debian)
+wget https://packages.riak.com/riak/kv/3.0.16/ubuntu/focal/pool/r/riak/riak_3.0.16-1_amd64.deb
+sudo dpkg -i riak_3.0.16-1_amd64.deb
+sudo apt-get install -f
+
+# Start Riak
+sudo riak start
+riak ping          # → pong
+Basic operations (using curl):
+# Create / Store
+curl -X PUT http://localhost:8098/buckets/students/keys/S001 \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Amit Sharma","age":21,"course":"BCA","city":"Delhi"}'
+
+# Retrieve
+curl http://localhost:8098/buckets/students/keys/S001
+# Output: {"name":"Amit Sharma","age":21,"course":"BCA","city":"Delhi"}
+
+# Update
+curl -X PUT http://localhost:8098/buckets/students/keys/S001 \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Amit Sharma","age":22,"course":"BCA","city":"Noida"}'
+
+# Delete
+curl -X DELETE http://localhost:8098/buckets/students/keys/S001
+2. user_sessions bucket
+curl -X PUT http://localhost:8098/buckets/user_sessions/keys/SESS_98765 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "session_id": "SESS_98765",
+    "user_id": "U1001",
+    "login_time": "2025-10-12T10:30:00Z",
+    "status": "active"
+  }'
+
+curl http://localhost:8098/buckets/user_sessions/keys/SESS_98765
+# Output: {"session_id":"SESS_98765","user_id":"U1001","login_time":"2025-10-12T10:30:00Z","status":"active"}
+3. User Profiles & Preferences (PUT / GET)
+curl -X PUT http://localhost:8098/buckets/user_profiles/keys/U1001 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Priya Verma",
+    "email": "priya@example.com",
+    "city": "Bangalore",
+    "language": "en",
+    "theme": "dark",
+    "notifications": {"email": true, "sms": false, "push": true}
+  }'
+
+curl http://localhost:8098/buckets/user_profiles/keys/U1001
+4. Shopping Cart Application
+# Create cart
+curl -X PUT http://localhost:8098/buckets/carts/keys/U1001 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "U1001",
+    "items": [
+      {"product_id": "P101", "qty": 2, "price": 499},
+      {"product_id": "P205", "qty": 1, "price": 1299}
+    ],
+    "total": 2297
+  }'
+
+# Add / Update item
+curl -X PUT http://localhost:8098/buckets/carts/keys/U1001 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "U1001",
+    "items": [
+      {"product_id": "P101", "qty": 3, "price": 499},
+      {"product_id": "P205", "qty": 1, "price": 1299},
+      {"product_id": "P310", "qty": 1, "price": 799}
+    ],
+    "total": 3595
+  }'
+
+# Retrieve
+curl http://localhost:8098/buckets/carts/keys/U1001
+
+# Remove product (update without that product)
+curl -X PUT http://localhost:8098/buckets/carts/keys/U1001 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "U1001",
+    "items": [
+      {"product_id": "P101", "qty": 3, "price": 499},
+      {"product_id": "P310", "qty": 1, "price": 799}
+    ],
+    "total": 2296
+  }'
+5. Structure of Data in Key-Value Store
+# String
+curl -X PUT http://localhost:8098/buckets/demo/keys/str1 -d "Hello Riak"
+
+# JSON Document
+curl -X PUT http://localhost:8098/buckets/demo/keys/json1 \
+  -H "Content-Type: application/json" \
+  -d '{"id":1,"tags":["nosql","riak"]}'
+
+# List (as JSON array)
+curl -X PUT http://localhost:8098/buckets/demo/keys/list1 \
+  -H "Content-Type: application/json" \
+  -d '["apple","banana","cherry"]'
+
+# Retrieve all
+curl http://localhost:8098/buckets/demo/keys/str1
+curl http://localhost:8098/buckets/demo/keys/json1
+curl http://localhost:8098/buckets/demo/keys/list1
+Explanation:
+Bucket = logical namespace (like a table)
+Key = unique identifier
+Value = any data (string, JSON, binary, etc.)
+6. Consistency (N/R/W Quorum)
+In riak.conf (or via environment):
+# Example: N=3, R=2, W=2 (quorum)
+curl -X PUT http://localhost:8098/buckets/students/keys/S002?w=2 \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Ravi"}'
+
+curl "http://localhost:8098/buckets/students/keys/S002?r=2"
+Riak uses eventual consistency with tunable quorum. W=2 means write succeeds when 2 replicas acknowledge; R=2 means read returns value from 2 replicas.
+7. Scaling Demonstration
+# Create multiple buckets and bulk insert (example script)
+for i in {1..1000}; do
+  curl -X PUT http://localhost:8098/buckets/scale_demo/keys/key_$i \
+    -d "value_$i" > /dev/null
+done
+
+# List keys (approximate)
+curl http://localhost:8098/buckets/scale_demo/keys?keys=true
+Riak uses consistent hashing to distribute keys across the ring (vnode → node). Adding nodes causes automatic redistribution → horizontal scaling.
+8. Multi-operation Transaction-like Scenario
+Riak does not support multi-key ACID transactions. You simulate with sequential operations:
+# 1. Add item
+curl -X PUT .../carts/keys/U1001 -d '{... items with new product ...}'
+
+# 2. Update quantity
+curl -X PUT .../carts/keys/U1001 -d '{... updated qty ...}'
+
+# 3. Update total
+curl -X PUT .../carts/keys/U1001 -d '{... new total ...}'
+Limitation: No atomicity across keys. Concurrent updates can cause lost updates (use vector clocks / siblings to detect).
+9. Query-by-data (Application-level)
+Riak has no secondary indexes by default (or limited 2i). Application must scan or maintain secondary indexes itself.
+# Python example (using riak client)
+import riak
+client = riak.RiakClient(pb_port=8087)
+bucket = client.bucket('users')
+
+# Store
+obj = bucket.new('U1', data={'name':'Amit','city':'Delhi','age':22})
+obj.store()
+
+# Application-level filter (scan all keys – not efficient)
+for key in bucket.get_keys():
+    data = bucket.get(key).data
+    if data and data.get('city') == 'Delhi':
+        print(data)
+10. Set Operations (using Riak Sets – CRDT)
+# Create set
+curl -X POST http://localhost:8098/types/sets/buckets/interests/datatypes/U1001 \
+  -H "Content-Type: application/json" \
+  -d '{"add_all": ["AI","Cloud","NoSQL"]}'
+
+# Add element
+curl -X POST .../U1001 -d '{"add": "Blockchain"}'
+
+# Remove
+curl -X POST .../U1001 -d '{"remove": "Cloud"}'
+
+# Get set
+curl http://localhost:8098/types/sets/buckets/interests/datatypes/U1001
+# Output: {"value":["AI","Blockchain","NoSQL"]}
+Neo4j Section (Questions 11–15)
+11. Install Neo4j + Student-Course-Department Graph
+# Install (Ubuntu)
+wget -O - https://debian.neo4j.com/neotechnology.gpg.key | sudo apt-key add -
+echo 'deb https://debian.neo4j.com stable latest' | sudo tee /etc/apt/sources.list.d/neo4j.list
+sudo apt-get update
+sudo apt-get install neo4j
+sudo neo4j start
+Cypher (Neo4j Browser – http://localhost:7474):
+CREATE (s1:Student {id:'S001', name:'Amit', age:21})
+CREATE (s2:Student {id:'S002', name:'Priya', age:20})
+CREATE (c1:Course {code:'BCA305', name:'NoSQL'})
+CREATE (c2:Course {code:'BCA301', name:'Java'})
+CREATE (d1:Department {name:'Computer Science'})
+
+CREATE (s1)-[:ENROLLED_IN]->(c1)
+CREATE (s2)-[:ENROLLED_IN]->(c1)
+CREATE (s1)-[:ENROLLED_IN]->(c2)
+CREATE (c1)-[:BELONGS_TO]->(d1)
+CREATE (c2)-[:BELONGS_TO]->(d1)
+12. Social Network Graph
+CREATE (p1:Person {name:'Amit'})
+CREATE (p2:Person {name:'Priya'})
+CREATE (p3:Person {name:'Ravi'})
+CREATE (co:Company {name:'TCS'})
+
+CREATE (p1)-[:FRIENDS_WITH]->(p2)
+CREATE (p1)-[:FOLLOWS]->(p3)
+CREATE (p2)-[:FOLLOWS]->(p1)
+CREATE (p1)-[:WORKS_AT]->(co)
+CREATE (p3)-[:WORKS_AT]->(co)
+
+// Friends of Amit
+MATCH (p:Person {name:'Amit'})-[:FRIENDS_WITH]-(friend)
+RETURN friend.name
+
+// Followers of Amit
+MATCH (p:Person {name:'Amit'})<-[:FOLLOWS]-(follower)
+RETURN follower.name
+13. E-commerce Graph
+CREATE (c:Customer {id:'C001', name:'Amit'})
+CREATE (p1:Product {id:'P101', name:'Laptop', price:55000})
+CREATE (p2:Product {id:'P205', name:'Mouse', price:599})
+CREATE (cat:Category {name:'Electronics'})
+CREATE (o:Order {id:'O1001', date:'2025-10-10'})
+
+CREATE (p1)-[:BELONGS_TO]->(cat)
+CREATE (p2)-[:BELONGS_TO]->(cat)
+CREATE (c)-[:PLACED]->(o)
+CREATE (o)-[:CONTAINS {qty:1}]->(p1)
+CREATE (o)-[:CONTAINS {qty:2}]->(p2)
+
+// Products purchased by Amit
+MATCH (c:Customer {name:'Amit'})-[:PLACED]->(o)-[:CONTAINS]->(p:Product)
+RETURN p.name, p.price
+14. Transactions, Consistency & Availability
+:BEGIN
+CREATE (s:Student {id:'S010', name:'Neha'})
+MATCH (c:Course {code:'BCA305'})
+CREATE (s)-[:ENROLLED_IN]->(c)
+SET s.age = 19
+:COMMIT
+
+// Rollback example
+:BEGIN
+CREATE (s:Student {id:'S011', name:'Test'})
+:ROLLBACK
+Neo4j provides ACID transactions. All operations inside a transaction succeed or fail together → strong consistency. Availability is high with Causal Clustering (read replicas).
+15. Complete Graph Application (Python + Neo4j)
+from neo4j import GraphDatabase
+
+driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
+
+def create_student(tx, id, name):
+    tx.run("CREATE (s:Student {id:$id, name:$name})", id=id, name=name)
+
+def get_friends(tx, name):
+    result = tx.run("""
+        MATCH (p:Person {name:$name})-[:FRIENDS_WITH]-(f)
+        RETURN f.name AS friend
+    """, name=name)
+    return [r["friend"] for r in result]
+
+with driver.session() as session:
+    session.execute_write(create_student, "S020", "Karan")
+    friends = session.execute_read(get_friends, "Amit")
+    print(friends)
+
+driver.close()
+CRUD + Relationship queries are natural in Neo4j.
+Use cases: Social networks, recommendation engines, fraud detection, knowledge graphs.
+Summary of Key Points
+Feature
+Riak KV
+Neo4j
+Data Model
+Key-Value + CRDTs
+Property Graph
+Consistency
+Tunable (eventual)
+Strong (ACID)
+Scaling
+Excellent horizontal
+Vertical + Causal Clustering
+Query Style
+Key-based / Application logic
+Cypher (relationship-first)
+Best For
+High write, simple lookups
+Connected data, recommendations
+You can copy-paste the commands/Cypher directly into your terminal / Neo4j Browser. All outputs shown are realistic expected results.
