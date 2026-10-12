@@ -1,0 +1,283 @@
+Assignment – Unit 5: NoSQL Database
+Solutions (Questions 1–15)
+1. Architecture and Working of Riak as a Key-Value NoSQL Database
+Riak is a distributed key-value NoSQL database designed for high availability, fault tolerance, and scalability. It follows a masterless architecture based on Amazon’s Dynamo paper.
+Architecture
+Nodes: All nodes are equal (no single master). Data is distributed across nodes using consistent hashing.
+Ring: The keyspace is treated as a circular ring. Keys are hashed and mapped to positions on the ring; each node owns a range of the ring.
+Vnodes (virtual nodes): Each physical node hosts multiple vnodes for better load distribution.
+Replication: Data is replicated to N nodes (default N=3) for fault tolerance.
+Gossip protocol: Nodes exchange membership and ring information.
+How Riak stores data
+Data is stored as key-value pairs.
+A key uniquely identifies a value (any binary object: JSON, text, image, etc.).
+Values are stored in buckets. Buckets group related keys and hold configuration (n_val, allow_mult, etc.).
+Retrieval is a simple get/put by key → O(1) average time.
+Major characteristics vs relational databases
+Feature
+Riak (Key-Value)
+Relational DB
+Schema
+Schema-less
+Fixed schema
+Data model
+Key → Value
+Tables, rows, columns
+Scaling
+Horizontal (add nodes)
+Mostly vertical
+Consistency
+Eventual (tunable)
+Strong (ACID)
+Joins / Relations
+Not supported natively
+First-class
+Availability
+Designed for high availability
+Can sacrifice availability
+2. Key-Value Data Model in Detail
+Structure of data
+Simplest NoSQL model: every item is a key that maps to a value.
+Key = unique identifier (string, integer, UUID, etc.).
+Value = opaque blob (JSON document, binary, text, serialized object).
+Optional: buckets / namespaces to group keys.
+Key-Value store features
+Extremely fast lookups by key.
+Simple API: PUT(key, value), GET(key), DELETE(key).
+Horizontal scalability via partitioning.
+High write and read throughput.
+Support for secondary indexes or MapReduce in some systems (Riak).
+Data access mechanism
+Direct key-based access (hash-based routing).
+No complex query language required for basic operations.
+Limitations
+No rich querying (cannot easily search by value content).
+Relationships must be managed in application code.
+Limited atomic multi-key operations.
+Data modeling requires careful key design.
+Why suitable for applications requiring fast lookups
+Lookup is O(1) average case.
+Ideal for session stores, caching, user profiles by ID, shopping carts by session ID, configuration data, etc.
+Minimal overhead compared to relational joins or index scans.
+3. Consistency Model of Riak
+Riak uses eventual consistency with tunable consistency.
+How Riak handles consistency
+Uses the N/R/W parameters:
+N = number of replicas
+R = number of replicas that must respond for a successful read
+W = number of replicas that must acknowledge a successful write
+Default: N=3, R=2, W=2 → strong enough for most cases while remaining highly available.
+Vector clocks (or dotted version vectors) detect concurrent updates (siblings).
+Application or last-write-wins (LWW) resolves conflicts.
+CAP trade-off
+Riak prefers Availability + Partition tolerance (AP) over strong Consistency.
+During network partitions, the system remains available; conflicting writes are resolved later (eventual consistency).
+Example
+Write a user session with W=2, N=3.
+Two nodes acknowledge → write succeeds.
+A read with R=2 will return the latest value from a majority.
+If a partition isolates one replica, the system still serves requests from the other replicas.
+4. Transactions and Multi-Operation Transactions in Riak
+Traditional relational-style transactions
+ACID transactions spanning multiple keys/rows are difficult in distributed key-value stores because:
+Data is partitioned across many nodes.
+Coordinating a distributed 2-phase commit is expensive and reduces availability.
+Network partitions make strong atomicity hard to guarantee.
+Possible approaches for maintaining correctness
+Single-key atomicity: Riak guarantees atomic read/write of a single key-value pair.
+Client-side coordination: Application performs multi-key operations carefully (e.g., using unique request IDs, compensating actions).
+Causal consistency / vector clocks: Detect concurrent modifications.
+CRDTs (Conflict-free Replicated Data Types): Riak supports CRDTs (counters, sets, maps) that automatically resolve conflicts.
+Riak Data Types and strong consistency buckets (in later versions) for limited multi-key needs.
+Application-level saga pattern or eventual consistency with reconciliation.
+5. Query Features of Riak
+Querying by key vs by data
+By key: Primary and fastest method (GET /buckets/B/keys/K).
+By data: Requires secondary mechanisms because values are opaque.
+How Riak supports searching and secondary indexes
+Secondary Indexes (2i): Index on integer or binary fields of the value. Allows range queries and exact matches.
+Riak Search (or Solr integration in older versions): Full-text search on JSON/XML values.
+MapReduce: Distributed processing for complex aggregations (less common now).
+Link Walking (legacy): Follow links between objects.
+When application requirements become complex
+As needs grow beyond simple key lookup (e.g., “find all users in city X”, “search products by name”), secondary indexes or external search engines (Elasticsearch) are added.
+Application must maintain indexes or denormalize data into multiple keys.
+6. Storing Millions of User Sessions with Riak
+Data design
+Bucket: sessions
+Key: session:<session_id> or simply the session UUID
+Value (JSON example):
+{
+  "user_id": "u12345",
+  "login_time": "2026-10-12T08:00:00Z",
+  "device": "Android 14 / Chrome",
+  "expiry": "2026-10-12T20:00:00Z",
+  "data": { ... }
+}
+How Riak is used
+High write rate for session creation/update.
+Fast GET by session ID on every request.
+TTL (time-to-live) or expiry field + background cleanup.
+Replication (N=3) for durability and availability.
+Advantages of Key-Value model
+Extremely fast lookups by session ID.
+Easy horizontal scaling as session volume grows.
+No schema changes needed when session attributes evolve.
+High availability even during node failures.
+7. Conceptual Key-Value Data Structure for E-commerce
+Recommended design
+Entity
+Key Pattern
+Value Content
+User Profile
+user:<user_id>
+JSON: name, email, preferences, addresses
+Preferences
+prefs:<user_id>
+JSON: theme, language, notification settings
+Shopping Cart
+cart:<user_id> or cart:<session_id>
+JSON: list of {product_id, qty, price}
+Product
+product:<product_id>
+JSON: name, price, stock, category
+Efficient access & update
+Profile & cart retrieved/updated by single key → very fast.
+Cart updates are atomic per key.
+For “add to cart”: GET cart → modify in app → PUT cart.
+Denormalize frequently accessed data (e.g., product name inside cart) to avoid extra lookups.
+8. Relationships in Key-Value Databases
+Why relationships are harder
+Key-value stores have no built-in foreign keys, joins, or graph traversal.
+Relationships must be encoded in the application:
+Store related keys inside the value (e.g., list of friend IDs).
+Use composite keys or secondary indexes.
+Maintain bidirectional references manually.
+Suitable techniques
+Embedding: Store related data inside the value (good for 1:few).
+Reference by key: Store list of related keys.
+Secondary indexes: Index on related fields.
+Application-level joins: Fetch multiple keys and join in code.
+Denormalization: Duplicate data to avoid joins.
+Compared with relational (joins) or graph databases (native edges), key-value requires more application logic.
+9. Scaling in Riak
+How distributed Key-Value databases handle growth
+Partitioning (Sharding): Consistent hashing distributes keys evenly across the ring.
+Replication: Each key is stored on N nodes → fault tolerance.
+Adding nodes: New nodes claim partitions; data is transferred (hinted handoff + anti-entropy).
+Read/Write scaling: More nodes = more throughput.
+Role of components
+Partitioning → horizontal scale-out.
+Replication → availability & durability.
+Distributed nodes → no single point of failure; load is spread.
+Riak automatically rebalances when nodes are added or removed.
+10. Operations by Sets in Key-Value Databases
+Concept
+Many key-value stores (including Riak with CRDTs) support set data types.
+Operations: ADD, REMOVE, UNION, INTERSECTION, CONTAINS, SIZE.
+Why useful
+User groups: Set of user IDs belonging to a group.
+Tags: Set of tags for a product or post.
+Product categories: Set of product IDs in a category.
+Social relationships: Set of followers / following.
+Examples
+Key group:admins → Set of user IDs.
+Key user:123:following → Set of user IDs the user follows.
+Adding a tag: SADD product:456:tags "electronics".
+Sets allow efficient membership tests and avoid reading the entire list for simple checks.
+11. Graph Databases and Their Data Model
+Data model
+Nodes (vertices): Entities (User, Post, Product…).
+Relationships / Edges: Directed or undirected connections between nodes (FRIENDS_WITH, LIKES, FOLLOWS…).
+Properties: Key-value pairs on both nodes and relationships.
+Labels: Tags on nodes (e.g., :User, :Post) for grouping and indexing.
+Why Neo4j is suitable for highly connected data
+Relationships are first-class citizens (stored as direct pointers).
+Traversals are extremely efficient (index-free adjacency).
+Natural fit for social networks, recommendation engines, fraud detection, knowledge graphs, etc.
+12. Major Features of Neo4j
+Feature
+Neo4j
+Traditional Relational
+Consistency
+ACID (strong)
+ACID
+Transactions
+Full ACID support
+Full ACID
+Availability
+Causal clustering, replicas
+Master-slave / clustering
+Query language
+Cypher (declarative, pattern matching)
+SQL
+Scaling
+Horizontal via Fabric / clustering
+Mostly vertical + sharding
+Relationships
+Native, first-class
+Foreign keys + joins
+Neo4j stores data as a graph natively, making multi-hop queries far more efficient than SQL joins on large connected datasets.
+13. Graph Database Query Processing using Neo4j
+Graph traversal & pattern-based queries
+Cypher uses pattern matching:
+MATCH (u:User)-[:FRIENDS_WITH]->(f:User)-[:LIKES]->(p:Post)
+WHERE u.name = "Alice"
+RETURN p
+Traversals follow relationships directly (no join tables).
+Why more effective than relational joins
+Relational joins become expensive with many hops (self-joins on large tables).
+Graph engines use index-free adjacency → constant-time hop.
+Excellent for path finding, recommendations, community detection on highly connected data.
+14. Modeling a Social Networking Application in Neo4j
+Suggested model
+(:User {id, name, email})
+(:Post {id, content, timestamp})
+(:Group {id, name})
+
+(User)-[:FRIENDS_WITH]->(User)
+(User)-[:FOLLOWS]->(User)
+(User)-[:POSTED]->(Post)
+(User)-[:LIKES]->(Post)
+(User)-[:MEMBER_OF]->(Group)
+(User)-[:RECOMMENDED]->(User)   // or derived
+Advantages for relationship-based queries
+“Friends of friends” → simple 2-hop traversal.
+“People you may know” → path queries + filters.
+Feed generation, mutual friends, group recommendations are natural and fast.
+No complex multi-table joins required.
+15. Comparison: Riak (Key-Value) vs Neo4j (Graph)
+Aspect
+Riak (Key-Value)
+Neo4j (Graph)
+Data structure
+Key → Value
+Nodes + Relationships + Properties
+Consistency
+Eventual (tunable)
+Strong (ACID)
+Transactions
+Single-key atomic; limited multi-key
+Full multi-node ACID transactions
+Availability
+Extremely high (AP)
+High with clustering
+Query features
+Key lookup + secondary indexes
+Powerful graph pattern matching (Cypher)
+Relationships
+Application-managed
+Native first-class
+Scalability
+Excellent horizontal
+Good horizontal + vertical
+Best use cases
+Sessions, caches, simple profiles, shopping carts
+Social networks, recommendations, highly connected data
+Recommendations
+Shopping-cart system → Riak (simple key-value access by cart/session ID, high write throughput, easy scaling).
+User-profile system → Either works; Riak is simpler and faster for pure key-based access. Neo4j if profiles have rich relationships.
+Social-network recommendation system → Neo4j (native relationship traversal makes friend-of-friend, “people you may know”, and recommendation queries far more efficient and natural).
+Summary
+Riak excels at simple, ultra-fast, highly available key-value workloads.
+Neo4j excels when the value of the data lies in the connections between entities.
