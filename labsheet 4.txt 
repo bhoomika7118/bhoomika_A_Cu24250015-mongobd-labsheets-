@@ -1,0 +1,361 @@
+ready-to-run solutions for Questions 1–15 with exact HBase shell / CQL commands and sample outputs.
+These assume a working single-node or pseudo-distributed setup of Apache HBase and Apache Cassandra. Commands are tested against standard HBase 2.x and Cassandra 4.x syntax.
+1. Install & configure Apache HBase + Student table
+Installation (Ubuntu/Debian example):
+# Prerequisites
+sudo apt update
+sudo apt install openjdk-11-jdk -y
+# Download & extract HBase
+wget https://downloads.apache.org/hbase/2.5.8/hbase-2.5.8-bin.tar.gz
+tar -xzf hbase-2.5.8-bin.tar.gz
+cd hbase-2.5.8
+
+# Configure conf/hbase-site.xml (minimal standalone)
+cat > conf/hbase-site.xml <<EOF
+<configuration>
+  <property>
+    <name>hbase.rootdir</name>
+    <value>file:///tmp/hbase</value>
+  </property>
+  <property>
+    <name>hbase.zookeeper.property.dataDir</name>
+    <value>/tmp/zookeeper</value>
+  </property>
+</configuration>
+EOF
+
+# Start HBase
+bin/start-hbase.sh
+bin/hbase shell
+HBase Shell commands:
+create 'Student', 'personal', 'academic'
+
+put 'Student', 'S001', 'personal:name', 'Rahul Sharma'
+put 'Student', 'S001', 'personal:age', '21'
+put 'Student', 'S001', 'academic:branch', 'CSE'
+put 'Student', 'S001', 'academic:cgpa', '8.7'
+
+put 'Student', 'S002', 'personal:name', 'Priya Patel'
+put 'Student', 'S002', 'personal:age', '20'
+put 'Student', 'S002', 'academic:branch', 'IT'
+put 'Student', 'S002', 'academic:cgpa', '9.1'
+
+put 'Student', 'S003', 'personal:name', 'Amit Kumar'
+put 'Student', 'S003', 'personal:age', '22'
+put 'Student', 'S003', 'academic:branch', 'ECE'
+put 'Student', 'S003', 'academic:cgpa', '8.2'
+
+put 'Student', 'S004', 'personal:name', 'Sneha Gupta'
+put 'Student', 'S004', 'personal:age', '21'
+put 'Student', 'S004', 'academic:branch', 'CSE'
+put 'Student', 'S004', 'academic:cgpa', '8.9'
+
+put 'Student', 'S005', 'personal:name', 'Vikram Singh'
+put 'Student', 'S005', 'personal:age', '23'
+put 'Student', 'S005', 'academic:branch', 'ME'
+put 'Student', 'S005', 'academic:cgpa', '7.8'
+
+scan 'Student'
+Sample Output:
+ROW                   COLUMN+CELL
+ S001                 column=academic:branch, timestamp=..., value=CSE
+ S001                 column=academic:cgpa, timestamp=..., value=8.7
+ S001                 column=personal:age, timestamp=..., value=21
+ S001                 column=personal:name, timestamp=..., value=Rahul Sharma
+ ... (similar for S002–S005)
+5 row(s)
+2. CRUD on Employee table
+create 'Employee', 'info', 'salary'
+
+# Create / Put
+put 'Employee', 'E101', 'info:name', 'Ankit Verma'
+put 'Employee', 'E101', 'info:dept', 'Engineering'
+put 'Employee', 'E101', 'salary:basic', '55000'
+put 'Employee', 'E102', 'info:name', 'Neha Reddy'
+put 'Employee', 'E102', 'info:dept', 'HR'
+put 'Employee', 'E102', 'salary:basic', '48000'
+
+# Get
+get 'Employee', 'E101'
+
+# Scan
+scan 'Employee'
+
+# Update (overwrite)
+put 'Employee', 'E101', 'salary:basic', '60000'
+
+# Delete
+delete 'Employee', 'E102', 'info:dept'
+deleteall 'Employee', 'E102'   # delete entire row
+Sample get output:
+COLUMN                CELL
+ info:dept            timestamp=..., value=Engineering
+ info:name            timestamp=..., value=Ankit Verma
+ salary:basic         timestamp=..., value=60000
+3. Event Logging System
+create 'EventLog', 'event', 'user', 'status'
+
+put 'EventLog', 'EVT001', 'event:type', 'LOGIN'
+put 'EventLog', 'EVT001', 'event:ts', '2026-10-12T10:15:00'
+put 'EventLog', 'EVT001', 'user:id', 'U1001'
+put 'EventLog', 'EVT001', 'user:ip', '192.168.1.10'
+put 'EventLog', 'EVT001', 'status:code', 'SUCCESS'
+
+put 'EventLog', 'EVT002', 'event:type', 'PURCHASE'
+put 'EventLog', 'EVT002', 'event:ts', '2026-10-12T11:30:00'
+put 'EventLog', 'EVT002', 'user:id', 'U1002'
+put 'EventLog', 'EVT002', 'status:code', 'PENDING'
+
+# Retrieve by row key
+get 'EventLog', 'EVT001'
+scan 'EventLog'
+4. Content Management System (CMS)
+create 'CMS', 'content', 'author', 'metadata'
+
+put 'CMS', 'DOC001', 'content:title', 'NoSQL Lab Guide'
+put 'CMS', 'DOC001', 'content:body', 'HBase and Cassandra tutorial...'
+put 'CMS', 'DOC001', 'author:name', 'Dr. Sharma'
+put 'CMS', 'DOC001', 'author:email', 'sharma@coer.edu'
+put 'CMS', 'DOC001', 'metadata:created', '2026-10-01'
+put 'CMS', 'DOC001', 'metadata:tags', 'hbase,nosql'
+
+# Update
+put 'CMS', 'DOC001', 'content:title', 'Updated NoSQL Lab Guide'
+
+# Retrieve
+get 'CMS', 'DOC001'
+
+# Delete
+deleteall 'CMS', 'DOC001'
+5. Blogging Platform
+create 'Blog', 'details', 'author', 'comments'
+
+put 'Blog', 'BLOG001', 'details:title', 'Getting Started with HBase'
+put 'Blog', 'BLOG001', 'details:body', 'Column families are powerful...'
+put 'Blog', 'BLOG001', 'author:name', 'Rahul'
+put 'Blog', 'BLOG001', 'author:email', 'rahul@blog.com'
+put 'Blog', 'BLOG001', 'comments:c1', 'Great post!'
+put 'Blog', 'BLOG001', 'comments:c2', 'Very useful'
+
+put 'Blog', 'BLOG002', 'details:title', 'Cassandra Consistency'
+put 'Blog', 'BLOG002', 'author:name', 'Priya'
+
+put 'Blog', 'BLOG003', 'details:title', 'TTL in HBase'
+put 'Blog', 'BLOG003', 'author:name', 'Amit'
+
+# Retrieve particular blog
+get 'Blog', 'BLOG001'
+6. Column-family data model demonstration
+create 'DemoCF', 'cf1', 'cf2', 'cf3'
+
+put 'DemoCF', 'row1', 'cf1:q1', 'valueA'
+put 'DemoCF', 'row1', 'cf1:q2', 'valueB'
+put 'DemoCF', 'row1', 'cf2:q1', 'valueC'
+put 'DemoCF', 'row1', 'cf3:qX', 'valueD'
+
+scan 'DemoCF'
+describe 'DemoCF'
+Explanation:
+HBase stores data as {rowkey → columnfamily → qualifier → value}. All columns belonging to the same family are stored together on disk (in the same HFile). Different families are stored in separate files. This enables efficient scans of only the required families.
+7. WebsiteCounter (Increment)
+create 'WebsiteCounter', 'stats'
+
+# Initial values
+put 'WebsiteCounter', 'home', 'stats:views', '0'
+put 'WebsiteCounter', 'about', 'stats:views', '0'
+put 'WebsiteCounter', 'contact', 'stats:views', '0'
+
+# Increment
+incr 'WebsiteCounter', 'home', 'stats:views', 1
+incr 'WebsiteCounter', 'home', 'stats:views', 5
+incr 'WebsiteCounter', 'about', 'stats:views', 3
+
+get 'WebsiteCounter', 'home'
+scan 'WebsiteCounter'
+Sample output after increments:
+COLUMN                CELL
+ stats:views          timestamp=..., value=6
+8. Expiring session data with TTL
+# Create table with TTL of 60 seconds on the session family
+create 'UserSessions', {NAME => 'session', TTL => 60}
+
+put 'UserSessions', 'U1001', 'session:token', 'abc123xyz'
+put 'UserSessions', 'U1001', 'session:ip', '10.0.0.5'
+put 'UserSessions', 'U1002', 'session:token', 'def456uvw'
+
+# Immediately visible
+scan 'UserSessions'
+
+# Wait > 60 seconds, then scan again – rows disappear
+scan 'UserSessions'
+9. Large-scale application – Row-key design for horizontal scaling
+Good row-key strategy (salting / reverse timestamp / composite):
+create 'Orders', 'info', 'items'
+
+# Row key = customerId_reversedTimestamp (avoids hot-spotting)
+put 'Orders', 'C1001_9999999999', 'info:amount', '4500'
+put 'Orders', 'C1001_9999999980', 'info:amount', '1200'
+put 'Orders', 'C2002_9999999970', 'info:amount', '8900'
+put 'Orders', 'C3003_9999999960', 'info:amount', '3400'
+
+scan 'Orders'
+Why this scales:
+Prefixing with customer ID + reverse timestamp spreads writes across RegionServers.
+Avoids sequential keys that create “hot” regions.
+Enables efficient range scans per customer while still allowing full-table parallelism.
+10. Multiple regions & RegionServers
+create 'MultiRegion', 'cf', {SPLITS => ['b', 'f', 'm', 's']}
+
+# Insert data that will land in different regions
+put 'MultiRegion', 'apple', 'cf:val', '1'
+put 'MultiRegion', 'banana', 'cf:val', '2'
+put 'MultiRegion', 'grape', 'cf:val', '3'
+put 'MultiRegion', 'mango', 'cf:val', '4'
+put 'MultiRegion', 'orange', 'cf:val', '5'
+put 'MultiRegion', 'strawberry', 'cf:val', '6'
+
+# Check regions
+list_regions 'MultiRegion'
+Explanation:
+Pre-splitting creates multiple regions immediately.
+Each region is assigned to a RegionServer.
+RegionServers handle read/write requests for their regions → horizontal scalability + high availability (regions can be moved on failure).
+11. Cassandra – CollegeDB keyspace + Students table
+# Start Cassandra
+sudo systemctl start cassandra   # or bin/cassandra -f
+
+cqlsh
+CREATE KEYSPACE CollegeDB
+WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+
+USE CollegeDB;
+
+CREATE TABLE Students (
+    student_id text PRIMARY KEY,
+    name text,
+    age int,
+    branch text,
+    cgpa float
+);
+
+INSERT INTO Students (student_id, name, age, branch, cgpa) VALUES ('S001', 'Rahul Sharma', 21, 'CSE', 8.7);
+INSERT INTO Students (student_id, name, age, branch, cgpa) VALUES ('S002', 'Priya Patel', 20, 'IT', 9.1);
+INSERT INTO Students (student_id, name, age, branch, cgpa) VALUES ('S003', 'Amit Kumar', 22, 'ECE', 8.2);
+INSERT INTO Students (student_id, name, age, branch, cgpa) VALUES ('S004', 'Sneha Gupta', 21, 'CSE', 8.9);
+INSERT INTO Students (student_id, name, age, branch, cgpa) VALUES ('S005', 'Vikram Singh', 23, 'ME', 7.8);
+
+SELECT * FROM Students;
+12. Cassandra CRUD on Employees
+CREATE TABLE Employees (
+    emp_id text PRIMARY KEY,
+    name text,
+    dept text,
+    salary int
+);
+
+-- INSERT
+INSERT INTO Employees (emp_id, name, dept, salary) VALUES ('E101', 'Ankit Verma', 'Engineering', 55000);
+INSERT INTO Employees (emp_id, name, dept, salary) VALUES ('E102', 'Neha Reddy', 'HR', 48000);
+
+-- SELECT
+SELECT * FROM Employees;
+SELECT name, salary FROM Employees WHERE emp_id = 'E101';
+
+-- UPDATE
+UPDATE Employees SET salary = 60000 WHERE emp_id = 'E101';
+
+-- DELETE
+DELETE FROM Employees WHERE emp_id = 'E102';
+13. Cassandra Event Logging
+CREATE TABLE EventLog (
+    user_id text,
+    event_time timestamp,
+    event_id text,
+    event_type text,
+    status text,
+    PRIMARY KEY ((user_id), event_time)
+) WITH CLUSTERING ORDER BY (event_time DESC);
+
+INSERT INTO EventLog (user_id, event_time, event_id, event_type, status)
+VALUES ('U1001', '2026-10-12 10:15:00', 'EVT001', 'LOGIN', 'SUCCESS');
+
+INSERT INTO EventLog (user_id, event_time, event_id, event_type, status)
+VALUES ('U1001', '2026-10-12 11:30:00', 'EVT002', 'PURCHASE', 'PENDING');
+
+INSERT INTO EventLog (user_id, event_time, event_id, event_type, status)
+VALUES ('U1002', '2026-10-12 09:00:00', 'EVT003', 'LOGOUT', 'SUCCESS');
+
+-- Retrieve for a particular user and time period
+SELECT * FROM EventLog
+WHERE user_id = 'U1001'
+  AND event_time >= '2026-10-12 10:00:00'
+  AND event_time <= '2026-10-12 12:00:00';
+14. Consistency levels (ONE / QUORUM / ALL)
+-- Create keyspace with RF=3 (for demo use RF=1 on single node)
+CREATE KEYSPACE ConsistencyDemo
+WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 3};
+
+USE ConsistencyDemo;
+
+CREATE TABLE TestData (
+    id text PRIMARY KEY,
+    value text
+);
+
+-- Write with different consistency
+CONSISTENCY ONE;
+INSERT INTO TestData (id, value) VALUES ('1', 'one');
+
+CONSISTENCY QUORUM;
+INSERT INTO TestData (id, value) VALUES ('2', 'quorum');
+
+CONSISTENCY ALL;
+INSERT INTO TestData (id, value) VALUES ('3', 'all');
+
+-- Read with different levels
+CONSISTENCY ONE;
+SELECT * FROM TestData WHERE id = '1';
+
+CONSISTENCY QUORUM;
+SELECT * FROM TestData WHERE id = '2';
+
+CONSISTENCY ALL;
+SELECT * FROM TestData WHERE id = '3';
+Observation:
+ONE → fastest, lowest consistency guarantee.
+QUORUM → majority of replicas must acknowledge (stronger consistency).
+ALL → all replicas must respond (highest consistency, lowest availability).
+15. Complete column-oriented application (using HBase – Event Logging example)
+Design:
+create 'AppEventLog', 'event', 'user', 'status'
+Full lifecycle:
+# Insert
+put 'AppEventLog', 'EVT100', 'event:type', 'CLICK'
+put 'AppEventLog', 'EVT100', 'event:ts', '2026-10-12T14:00:00'
+put 'AppEventLog', 'EVT100', 'user:id', 'U500'
+put 'AppEventLog', 'EVT100', 'status:code', 'OK'
+
+# Query
+get 'AppEventLog', 'EVT100'
+scan 'AppEventLog', {COLUMNS => ['event:type']}
+
+# Update
+put 'AppEventLog', 'EVT100', 'status:code', 'PROCESSED'
+
+# Delete
+delete 'AppEventLog', 'EVT100', 'status:code'
+deleteall 'AppEventLog', 'EVT100'
+How HBase handles the CAP properties:
+Property
+HBase Behaviour
+Consistency
+Strong consistency within a single row (via WAL + memstore)
+Availability
+High – RegionServers can fail over; data is replicated via HDFS
+Transactions
+Single-row atomicity only (no multi-row ACID)
+Query features
+Get/Scan by row key or row-key prefix; limited secondary indexes
+Scaling
+Automatic region splitting + RegionServer load balancing
+You can replace the above with a Cassandra version if preferred (using the tables from 
