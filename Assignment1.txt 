@@ -1,0 +1,179 @@
+Assignment – Unit I: Introduction to NoSQL Database
+Course: NoSQL Database Design
+Unit: I – Introduction to NoSQL Database
+Here are complete, well-structured answers to all 15 questions.
+1. What is NoSQL? Explain its main characteristics and applications.
+NoSQL (Not Only SQL) refers to a class of non-relational database systems designed to handle large volumes of unstructured, semi-structured, or rapidly changing data. Unlike traditional relational databases, NoSQL databases do not rely on fixed schemas or SQL as the primary query language.
+Main Characteristics:
+Schema-less / Flexible schema – Documents or records can have different fields.
+Horizontal scalability – Designed to scale out across commodity servers.
+High performance for read/write-heavy workloads.
+BASE properties (Basically Available, Soft state, Eventually consistent) instead of strict ACID.
+Support for multiple data models (key-value, document, column-family, graph).
+Distributed architecture with replication and partitioning.
+Applications:
+Social media platforms (user profiles, feeds)
+Real-time analytics and Big Data
+Content management systems
+IoT and sensor data storage
+E-commerce product catalogs
+Mobile and gaming backends
+Recommendation engines
+2. Explain the history and evolution of NoSQL databases.
+1970s–1990s: Relational databases (RDBMS) dominated after Edgar Codd’s relational model. They were excellent for structured data and transactional systems.
+Late 1990s – early 2000s: Rise of the web, e-commerce, and social networks created massive amounts of unstructured and semi-structured data that RDBMS struggled to scale.
+2000s: Companies like Google (Bigtable – 2006), Amazon (Dynamo – 2007), and Facebook developed internal systems that inspired open-source NoSQL databases.
+2009: The term “NoSQL” gained popularity after a meetup organized by Johan Oskarsson. Databases such as MongoDB, Cassandra, Redis, HBase, and CouchDB emerged.
+2010s onwards: NoSQL matured with multi-model databases, better consistency options, cloud-managed services (AWS DynamoDB, Azure Cosmos DB, MongoDB Atlas), and hybrid approaches combining SQL and NoSQL features.
+3. Explain the four major types of NoSQL databases with suitable examples.
+Key-Value Stores
+Simplest model: data stored as key-value pairs.
+Examples: Redis, Amazon DynamoDB, Riak, Memcached.
+Document Stores
+Data stored as documents (usually JSON, BSON, or XML). Flexible schema.
+Examples: MongoDB, CouchDB, Couchbase, Amazon DocumentDB.
+Column-Family (Wide-Column) Stores
+Data organized into rows and dynamic columns grouped into column families. Excellent for large-scale analytical workloads.
+Examples: Apache Cassandra, HBase, Google Bigtable, ScyllaDB.
+Graph Databases
+Data modeled as nodes, edges, and properties. Optimized for relationships.
+Examples: Neo4j, Amazon Neptune, ArangoDB, OrientDB.
+4. Differentiate between Key-Value, Document, Column-Family, and Graph databases.
+Feature
+Key-Value
+Document
+Column-Family
+Graph
+Data Model
+Key → Value
+Key → Document (JSON/BSON)
+Row key → Column families
+Nodes + Edges + Properties
+Schema
+Completely flexible
+Flexible (document-level)
+Flexible columns
+Flexible
+Query Capability
+Get/Put by key
+Rich queries on document fields
+Range queries, aggregations
+Graph traversal, pattern matching
+Best Use Case
+Caching, session store
+Content management, catalogs
+Time-series, analytics
+Social networks, recommendation
+Example
+Redis
+MongoDB
+Cassandra
+Neo4j
+5. Explain the importance and major advantages of relational databases.
+Importance:
+Relational databases remain the backbone of most enterprise transactional systems because they enforce data integrity, support complex queries, and provide strong consistency.
+Major Advantages:
+Strong ACID compliance (Atomicity, Consistency, Isolation, Durability)
+Well-defined schema and data integrity constraints
+Powerful declarative query language (SQL)
+Mature ecosystem, tools, and standards
+Excellent support for complex joins and transactions
+Proven reliability for financial, ERP, and critical business systems
+6. What is persistent data? Explain its importance in database systems.
+Persistent data is data that remains available even after the program or system that created it terminates. It is stored on non-volatile storage (hard disk, SSD, etc.).
+Importance:
+Ensures data survives system crashes, power failures, or restarts
+Enables long-term storage and retrieval of business-critical information
+Forms the foundation of reliable database systems (durability aspect of ACID/BASE)
+Allows historical analysis, auditing, and recovery
+7. What is concurrency? Explain why concurrency is required in database systems.
+Concurrency is the ability of a database system to allow multiple users or transactions to access and modify data simultaneously.
+Why it is required:
+Modern applications serve thousands or millions of concurrent users
+Improves system throughput and resource utilization
+Essential for multi-user environments (banking, e-commerce, social media)
+Without concurrency control, data inconsistency, lost updates, and dirty reads would occur
+8. Explain database integration and its importance in modern applications.
+Database integration is the process of combining data from multiple databases or data sources into a unified view so that applications can access and use the data as if it came from a single source.
+Importance in modern applications:
+Organizations typically use multiple specialized databases (SQL + NoSQL)
+Enables real-time data sharing across microservices
+Supports analytics, reporting, and decision-making
+Reduces data silos
+Facilitates hybrid architectures (polyglot persistence)
+9. What is Impedance Mismatch? Explain with a suitable example.
+Impedance Mismatch refers to the difference between the object-oriented model used in application code and the relational table model used in RDBMS.
+Example:
+In an object-oriented language, a Student object may contain nested objects (Address, list of Courses). In a relational database, this must be flattened into multiple tables (Students, Addresses, Courses, Student_Courses) with foreign keys. Mapping between the two models requires ORMs (Object-Relational Mappers) and often leads to complex joins and performance issues.
+NoSQL document databases reduce this mismatch because documents can closely mirror application objects.
+10. Differentiate between Application Databases and Integration Databases.
+Aspect
+Application Database
+Integration Database
+Purpose
+Serves a single application
+Serves multiple applications / systems
+Ownership
+Owned by one application team
+Shared across organization
+Schema
+Optimized for one application’s needs
+Must accommodate multiple consumers
+Coupling
+Tightly coupled to application
+Loosely coupled
+Example
+MongoDB used only by a mobile app
+Enterprise data warehouse or shared Cassandra cluster
+11. What is meant by “Attack of the Clusters”? Explain its role in database scalability.
+“Attack of the Clusters” is a term used by database researchers (notably in the context of NoSQL evolution) to describe the shift from scaling up (buying bigger single servers) to scaling out (using clusters of commodity servers).
+Role in scalability:
+Traditional RDBMS hit hardware limits when scaling vertically
+Clusters of cheap machines connected by networks provide virtually unlimited horizontal scalability
+Techniques such as sharding, replication, and distributed consensus became essential
+This approach is the foundation of modern distributed NoSQL systems
+12. Explain the major reasons behind the emergence of NoSQL databases.
+Explosive growth of unstructured and semi-structured data (web, social media, IoT)
+Need for massive horizontal scalability that RDBMS could not provide cost-effectively
+Demand for high write throughput and low latency
+Flexible schema requirements for agile development
+Rise of Big Data, Cloud Computing, and distributed systems
+Desire to reduce impedance mismatch between application objects and storage
+Cost of proprietary RDBMS licenses and high-end hardware
+13. Differentiate between SQL and NoSQL databases on the basis of schema, scalability, data model, and performance.
+Criteria
+SQL (Relational)
+NoSQL
+Schema
+Fixed, predefined schema
+Flexible / schema-less
+Scalability
+Primarily vertical
+Primarily horizontal
+Data Model
+Tables with rows and columns
+Key-value, Document, Column, Graph
+Performance
+Excellent for complex queries & joins
+Excellent for simple, high-volume access
+Consistency
+Strong (ACID)
+Usually eventual (BASE)
+Query Language
+Standardized SQL
+Varies (API, JSON queries, CQL, Cypher…)
+14. Explain how Big Data, Cloud Computing, and Distributed Systems contributed to the growth of NoSQL.
+Big Data: Volume, velocity, and variety of data exceeded the capabilities of traditional RDBMS. NoSQL systems were built to handle petabytes of data efficiently.
+Cloud Computing: Cloud providers offer elastic, pay-as-you-go infrastructure. NoSQL databases are designed to run on clusters of commodity machines that can be easily provisioned in the cloud.
+Distributed Systems: Concepts such as consistent hashing, eventual consistency, gossip protocols, and quorum-based replication (from systems like Dynamo and Bigtable) became the architectural foundation of most NoSQL databases, enabling global-scale deployment.
+15. Summarize the key concepts of NoSQL databases covered in Unit I and explain their importance in modern database applications.
+Key Concepts covered:
+Definition and characteristics of NoSQL
+Four major data models (Key-Value, Document, Column-Family, Graph)
+Comparison with relational databases
+Scalability through clustering and distribution
+Flexible schema and reduced impedance mismatch
+BASE vs ACID
+Drivers of NoSQL adoption (Big Data, Cloud, Distributed Systems)
+Importance in modern applications:
+NoSQL databases enable organizations to store and process massive, rapidly changing, and heterogeneous data at scale. They power real-time analytics, personalized experiences, IoT platforms, social networks, and cloud-native microservices architectures. By offering the right data model for the right use case (polyglot persistence), they allow developers to build more flexible, scalable, and cost-effective systems than was possible with relational databases alone.
