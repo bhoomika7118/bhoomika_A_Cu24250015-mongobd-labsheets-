@@ -1,0 +1,285 @@
+Sure. The uploaded lab sheet contains 15 MongoDB/NoSQL questions. BCA305P-AS02.pdf
+I can provide short MongoDB code for every question, along with sample output, keeping the code simple and suitable for a lab assignment.
+For example:
+Q1. Student Activity Tracking System
+db.students.insertOne({
+  name: "Rahul",
+  course: "BCA",
+  attendance: 85,
+  skills: ["Java", "MongoDB"],
+  recentActivity: "Quiz"
+})
+
+db.students.find({ attendance: { $gt: 80 } })
+Output:
+{
+  name: "Rahul",
+  course: "BCA",
+  attendance: 85,
+  skills: ["Java", "MongoDB"],
+  recentActivity: "Quiz"
+}
+Q2. Event Logging System
+db.events.insertMany([
+  {user:"Amit", event:"failed-login"},
+  {user:"Amit", event:"failed-login"},
+  {user:"Raj", event:"login"}
+])
+
+db.events.aggregate([
+  {$match:{event:"failed-login"}},
+  {$group:{_id:"$user", count:{$sum:1}}}
+])
+Output:
+{ _id: "Amit", count: 2 }
+I can prepare all 15 questions in this same short mongosh format with outputs, ready to copy into your assignment.
+Absolutely. Below are short MongoDB codes with sample outputs for all 15 questions from your lab sheet. The questions cover student tracking, event logging, blogging, product catalogs, orders, analytics, CMS, carts, reviews, inventory, transactions, notifications, courses, order tracking, and news. BCA305P-AS02.pdf BCA305P-AS02.pdf BCA305P-AS02.pdf
+Q1. Student Activity Tracking System
+db.students.insertOne({
+  name: "Rahul",
+  course: "BCA",
+  attendance: 85,
+  skills: ["Java", "MongoDB"],
+  recentActivity: "Quiz"
+})
+
+db.students.find({ attendance: { $gt: 80 } })
+Output:
+{ name: "Rahul", course: "BCA", attendance: 85,
+  skills: ["Java", "MongoDB"], recentActivity: "Quiz" }
+Q2. Event Logging System
+db.events.insertMany([
+  {user:"Amit", event:"failed-login"},
+  {user:"Amit", event:"failed-login"},
+  {user:"Raj", event:"login"}
+])
+
+db.events.aggregate([
+  {$match:{event:"failed-login"}},
+  {$group:{_id:"$user", count:{$sum:1}}}
+])
+Output:
+{ _id: "Amit", count: 2 }
+Q3. Mini Blogging Platform
+db.blogs.insertOne({
+  author:"Rahul",
+  category:"Technology",
+  tags:["MongoDB","NoSQL"],
+  comments:["Good article"]
+})
+
+db.blogs.find({
+  category:"Technology",
+  tags:"MongoDB"
+})
+Output:
+{
+  author: "Rahul",
+  category: "Technology",
+  tags: ["MongoDB", "NoSQL"],
+  comments: ["Good article"]
+}
+Q4. Flexible Product Catalog
+db.products.insertMany([
+  {name:"Dell Laptop", category:"laptop", ram:16},
+  {name:"Samsung A55", category:"mobile", camera:"50MP"},
+  {name:"Canon EOS", category:"camera", lens:"18-55mm"}
+])
+
+db.products.find({category:"laptop", ram:16})
+Output:
+{ name:"Dell Laptop", category:"laptop", ram:16 }
+Q5. E-Commerce Order Management
+db.orders.insertOne({
+  customer:"Amit",
+  products:[
+    {name:"Laptop", price:50000, qty:1},
+    {name:"Mouse", price:1000, qty:2}
+  ]
+})
+
+db.orders.aggregate([
+  {$match:{customer:"Amit"}},
+  {$unwind:"$products"},
+  {$group:{
+    _id:"$customer",
+    total:{$sum:{$multiply:["$products.price","$products.qty"]}}
+  }}
+])
+Output:
+{ _id:"Amit", total:52000 }
+Q6. Website Analytics System
+db.visits.insertMany([
+  {page:"Home", device:"Mobile"},
+  {page:"Home", device:"Desktop"},
+  {page:"Home", device:"Mobile"},
+  {page:"About", device:"Mobile"}
+])
+
+db.visits.aggregate([
+  {$group:{_id:"$page", visits:{$sum:1}}},
+  {$sort:{visits:-1}}
+])
+Output:
+{ _id:"Home", visits:3 }
+{ _id:"About", visits:1 }
+Q7. Content Management System
+db.articles.insertMany([
+  {title:"MongoDB Basics", status:"published"},
+  {title:"Node.js Guide", status:"unpublished"}
+])
+
+db.articles.find({status:"published"})
+Output:
+{ title:"MongoDB Basics", status:"published" }
+Q8. Shopping Cart System
+db.carts.insertOne({
+  user:"Rahul",
+  items:[
+    {product:"Laptop", price:50000, qty:1},
+    {product:"Mouse", price:1000, qty:2}
+  ]
+})
+
+db.carts.updateOne(
+  {user:"Rahul", "items.product":"Mouse"},
+  {$set:{"items.$.qty":3}}
+)
+
+db.carts.find({user:"Rahul"})
+Output:
+{
+  user:"Rahul",
+  items:[
+    {product:"Laptop", price:50000, qty:1},
+    {product:"Mouse", price:1000, qty:3}
+  ]
+}
+Q9. Product Review and Rating System
+db.reviews.insertMany([
+  {product:"Laptop", rating:5},
+  {product:"Laptop", rating:4},
+  {product:"Laptop", rating:3}
+])
+
+db.reviews.aggregate([
+  {$group:{
+    _id:"$product",
+    averageRating:{$avg:"$rating"},
+    reviews:{$sum:1}
+  }}
+])
+Output:
+{
+  _id:"Laptop",
+  averageRating:4,
+  reviews:3
+}
+Q10. Inventory Monitoring System
+db.inventory.insertMany([
+  {product:"Laptop", stock:5, minStock:10},
+  {product:"Mouse", stock:20, minStock:10}
+])
+
+db.inventory.find({
+  $expr:{$lt:["$stock","$minStock"]}
+})
+Output:
+{ product:"Laptop", stock:5, minStock:10 }
+Q11. Bank Wallet Transfer System
+db.wallets.insertMany([
+  {user:"Amit", balance:5000},
+  {user:"Raj", balance:2000}
+])
+
+var session = db.getMongo().startSession()
+var dbs = session.getDatabase("test")
+
+session.startTransaction()
+
+dbs.wallets.updateOne(
+  {user:"Amit"},
+  {$inc:{balance:-1000}}
+)
+
+dbs.wallets.updateOne(
+  {user:"Raj"},
+  {$inc:{balance:1000}}
+)
+
+session.commitTransaction()
+session.endSession()
+Output:
+Amit balance: 4000
+Raj balance: 3000
+Q12. User Notification System
+db.notifications.insertMany([
+  {user:"Rahul", message:"Order shipped", read:false},
+  {user:"Rahul", message:"Welcome", read:true}
+])
+
+db.notifications.find({
+  user:"Rahul",
+  read:false
+})
+Output:
+{ user:"Rahul", message:"Order shipped", read:false }
+Mark as read:
+db.notifications.updateOne(
+  {user:"Rahul", message:"Order shipped"},
+  {$set:{read:true}}
+)
+Output:
+{ acknowledged:true, modifiedCount:1 }
+Q13. Course Learning Platform
+db.students.insertMany([
+  {name:"Amit", course:"MongoDB", progress:90},
+  {name:"Raj", course:"MongoDB", progress:45}
+])
+
+db.students.find({progress:{$gte:80}})
+Output:
+{ name:"Amit", course:"MongoDB", progress:90 }
+Q14. Real-Time Order Tracking
+db.orders.insertOne({
+  orderId:101,
+  status:"Delivered",
+  history:[
+    "Placed",
+    "Confirmed",
+    "Shipped",
+    "Delivered"
+  ]
+})
+
+db.orders.findOne({orderId:101})
+Output:
+{
+  orderId:101,
+  status:"Delivered",
+  history:["Placed","Confirmed","Shipped","Delivered"]
+}
+Q15. Flexible News Database
+db.news.insertMany([
+  {
+    title:"New Technology",
+    author:"Amit",
+    category:"Tech",
+    tags:["AI","MongoDB"]
+  },
+  {
+    title:"City News",
+    location:"Agra",
+    category:"Local"
+  }
+])
+
+db.news.find({category:"Tech"})
+Output:
+{
+  title:"New Technology",
+  author:"Amit",
+  category:"Tech",
+  tags:["AI","MongoDB"]
+}
+These examples keep the implementation short and practical for a BCA lab record, while demonstrating the MongoDB operation requested in each question.
